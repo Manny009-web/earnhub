@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EarnHub — Tasks & Rewards</title>
+<style>
+:root{--navy:#14213d;--blue:#2563eb;--light:#f4f7fb;--green:#16a34a;--muted:#64748b;--border:#e2e8f0}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--light);color:#172033}
+header{background:var(--navy);color:#fff;padding:18px 5%;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font-size:1.35rem;font-weight:800;letter-spacing:.2px}.brand span{color:#60a5fa}
+header small{color:#cbd5e1}.wrap{max-width:1100px;margin:28px auto;padding:0 18px}
+.welcome{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+h1{font-size:clamp(1.5rem,3vw,2.1rem);margin:0 0 7px}.sub{color:var(--muted);margin:0}
+.btn{border:0;border-radius:10px;padding:11px 15px;font-weight:700;cursor:pointer;background:var(--blue);color:white}.btn:disabled{opacity:.45;cursor:not-allowed}.btn.secondary{background:#e8efff;color:#1d4ed8}.btn.dark{background:var(--navy)}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:20px 0}
+.card{background:white;border:1px solid var(--border);border-radius:16px;padding:19px;box-shadow:0 4px 16px #0f172a08}
+.stat-label{color:var(--muted);font-size:.9rem}.stat-value{font-size:1.65rem;font-weight:800;margin-top:8px}.green{color:var(--green)}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:26px 0 14px}
+.section-head h2{font-size:1.2rem;margin:0}.task-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.task{display:flex;flex-direction:column;gap:12px}.task-top{display:flex;justify-content:space-between;gap:12px}.task h3{margin:0 0 5px;font-size:1rem}.task p{margin:0;color:var(--muted);font-size:.92rem;line-height:1.45}
+.tag{display:inline-block;border-radius:999px;background:#eff6ff;color:#1d4ed8;padding:5px 9px;font-size:.78rem;font-weight:700;white-space:nowrap}.reward{font-weight:800;color:var(--green);white-space:nowrap}
+.task-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:auto}
+.history{width:100%;border-collapse:collapse}.history th,.history td{text-align:left;padding:12px 8px;border-bottom:1px solid var(--border);font-size:.9rem}.history th{color:var(--muted);font-weight:600}
+.note{margin-top:18px;padding:13px 15px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:12px;font-size:.9rem;line-height:1.5}
+footer{text-align:center;color:var(--muted);font-size:.82rem;padding:30px 15px}
+.modal{display:none;position:fixed;inset:0;background:#0f172acc;align-items:center;justify-content:center;padding:18px;z-index:5}.modal.show{display:flex}.modal-box{background:#fff;border-radius:16px;padding:22px;max-width:440px;width:100%}.modal-box h2{margin-top:0}.field{display:block;margin:14px 0}.field input,.field select{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:9px;margin-top:6px;font:inherit}.close{float:right;background:none;border:0;font-size:1.5rem;cursor:pointer}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#14213d;color:#fff;padding:12px 17px;border-radius:10px;display:none;max-width:90%;z-index:10}.toast.show{display:block}
+@media(max-width:700px){.stats{grid-template-columns:1fr}.task-list{grid-template-columns:1fr}.history th:nth-child(3),.history td:nth-child(3){display:none}.wrap{margin-top:20px}}
+</style>
+</head>
+<body>
+<header><div class="brand">Earn<span>Hub</span></div><div><small>Demo dashboard · Sample data only</small></div></header>
+<main class="wrap">
+  <div class="welcome">
+    <div><h1>Welcome back, Alex 👋</h1><p class="sub">Complete available tasks and track your rewards.</p></div>
+    <button class="btn" id="withdrawBtn">Request withdrawal</button>
+  </div>
+  <section class="stats" aria-label="Account summary">
+    <div class="card"><div class="stat-label">Available balance</div><div class="stat-value" id="balance">₦2,450</div></div>
+    <div class="card"><div class="stat-label">Pending rewards</div><div class="stat-value" id="pending">₦350</div></div>
+    <div class="card"><div class="stat-label">Tasks completed</div><div class="stat-value" id="completed">7</div></div>
+  </section>
+  <div class="section-head"><h2>Available tasks</h2><span class="sub">Demo rewards · Not redeemable</span></div>
+  <section class="task-list" id="tasks">
+    <article class="card task" data-id="survey" data-reward="150">
+      <div class="task-top"><div><h3>Quick product survey</h3><p>Answer a short sample questionnaire about shopping habits.</p></div><span class="tag">Survey</span></div>
+      <div class="task-foot"><span class="reward">+₦150</span><button class="btn complete">Complete demo</button></div>
+    </article>
+    <article class="card task" data-id="label" data-reward="200">
+      <div class="task-top"><div><h3>Image labeling practice</h3><p>Review a sample image and choose the best matching label.</p></div><span class="tag">AI data</span></div>
+      <div class="task-foot"><span class="reward">+₦200</span><button class="btn complete">Complete demo</button></div>
+    </article>
+    <article class="card task" data-id="reading" data-reward="100">
+      <div class="task-top"><div><h3>Read a short article</h3><p>Read a sample article and answer a comprehension question.</p></div><span class="tag">Content</span></div>
+      <div class="task-foot"><span class="reward">+₦100</span><button class="btn complete">Complete demo</button></div>
+    </article>
+    <article class="card task" data-id="feedback" data-reward="250">
+      <div class="task-top"><div><h3>Website feedback</h3><p>Try a sample page and share usability feedback.</p></div><span class="tag">Feedback</span></div>
+      <div class="task-foot"><span class="reward">+₦250</span><button class="btn complete">Complete demo</button></div>
+    </article>
+  </section>
+  <div class="section-head"><h2>Recent activity</h2><button class="btn secondary" id="resetBtn">Reset demo</button></div>
+  <div class="card" style="overflow-x:auto">
+    <table class="history"><thead><tr><th>Activity</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody id="history">
+      <tr><td>Welcome bonus (sample)</td><td class="green">+₦2,450</td><td>Demo</td><td>Today</td></tr>
+      <tr><td>Sample task reward</td><td class="green">+₦350</td><td>Pending</td><td>Today</td></tr>
+    </tbody></table>
+  </div>
+  <div class="note"><strong>Important:</strong> This is a front-end prototype. Balances and task completions are fictional demo data saved only in this browser session. It has no real user accounts, server, fraud protection, or payment integration. Do not collect real user details or promise real payouts until those systems are built and tested.</div>
+</main>
+<footer>EarnHub prototype · Built as a beginner-friendly starting point</footer>
+
+<div class="modal" id="withdrawModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-box"><button class="close" id="closeModal" aria-label="Close">&times;</button><h2 id="modalTitle">Request a demo withdrawal</h2><p class="sub">This only demonstrates the form; no money will be sent.</p>
+  <form id="withdrawForm">
+    <label class="field">Amount (₦)<input type="number" id="amount" min="500" step="50" required placeholder="e.g. 1000"></label>
+    <label class="field">Payout method<select id="method"><option>Bank transfer (demo)</option><option>Mobile money (demo)</option></select></label>
+    <button class="btn" type="submit">Submit demo request</button>
+  </form></div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+const initial={balance:2450,pending:350,completed:7,done:[],activity:[
+ {name:"Welcome bonus (sample)",amount:2450,status:"Demo"},
+ {name:"Sample task reward",amount:350,status:"Pending"}
+]};
+let state={...initial,done:[],activity:initial.activity.map(x=>({...x}))};
+const naira=n=>"₦"+Number(n).toLocaleString("en-NG");
+function render(){
+ document.getElementById("balance").textContent=naira(state.balance);
+ document.getElementById("pending").textContent=naira(state.pending);
+ document.getElementById("completed").textContent=state.completed;
+ document.querySelectorAll(".task").forEach(card=>{
+  const btn=card.querySelector("button"); const done=state.done.includes(card.dataset.id);
+  btn.disabled=done;btn.textContent=done?"Completed ✓":"Complete demo";
+ });
+ document.getElementById("history").innerHTML=state.activity.slice().reverse().map(a=>
+  `<tr><td>${escapeHtml(a.name)}</td><td class="${a.amount>=0?'green':''}">${a.amount>=0?'+':''}${naira(a.amount)}</td><td>${escapeHtml(a.status)}</td><td>Today</td></tr>`
+ ).join("");
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function toast(message){const el=document.getElementById("toast");el.textContent=message;el.classList.add("show");setTimeout(()=>el.classList.remove("show"),3000);}
+document.querySelectorAll(".complete").forEach(btn=>btn.addEventListener("click",()=>{
+ const card=btn.closest(".task"),id=card.dataset.id,reward=Number(card.dataset.reward);
+ if(state.done.includes(id))return;
+ state.done.push(id);state.balance+=reward;state.completed+=1;
+ state.activity.push({name:card.querySelector("h3").textContent,amount:reward,status:"Demo reward"});
+ render();toast("Demo task completed. Sample balance updated.");
+}));
+const modal=document.getElementById("withdrawModal");
+document.getElementById("withdrawBtn").addEventListener("click",()=>modal.classList.add("show"));
+document.getElementById("closeModal").addEventListener("click",()=>modal.classList.remove("show"));
+modal.addEventListener("click",e=>{if(e.target===modal)modal.classList.remove("show")});
+document.getElementById("withdrawForm").addEventListener("submit",e=>{
+ e.preventDefault();const amount=Number(document.getElementById("amount").value);
+ if(amount<500){toast("Demo minimum withdrawal is ₦500.");return}
+ if(amount>state.balance){toast("Amount exceeds the sample available balance.");return}
+ state.activity.push({name:"Demo withdrawal request",amount:-amount,status:"Not paid"});
+ render();modal.classList.remove("show");e.target.reset();
+ toast("Demo request recorded in this page only. No payment was made.");
+});
+document.getElementById("resetBtn").addEventListener("click",()=>{
+ state={...initial,done:[],activity:initial.activity.map(x=>({...x}))};render();toast("Demo reset.");
+});
+render();
+</script>
+</body>
+</html>
