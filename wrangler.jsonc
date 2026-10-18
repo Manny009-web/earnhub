@@ -8,5 +8,12 @@
     "directory": ".",
     "binding": "ASSETS",
     "run_worker_first": ["/api/*"]
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "earnhub-data-7319",
+      "database_id": "60eb098e-369f-4bf4-9150-2af244e4a06b"
+    }
+  ]
 }
