@@ -2,13 +2,22 @@
 import { hashPassword, makeId, jsonError } from "./auth.js";
 
 const headers = {
-  "Cache-Control": "no-store"
+ const headers = {
+  "Cache-Control": "no-store",
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type"
 };
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-
+if (url.pathname.startsWith("/api/") && request.method === "OPTIONS") {
+  return new Response(null, {
+    status: 204,
+    headers
+  });
+}
     if (url.pathname.startsWith("/api/")) {
       if (!env.DB) {
         return jsonError("Database binding DB is missing", 500);
