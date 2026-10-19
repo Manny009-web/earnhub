@@ -2,7 +2,6 @@
 import { hashPassword, makeId, jsonError } from "./auth.js";
 
 const headers = {
- const headers = {
   "Cache-Control": "no-store",
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -12,20 +11,22 @@ const headers = {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-if (url.pathname.startsWith("/api/") && request.method === "OPTIONS") {
-  return new Response(null, {
-    status: 204,
-    headers
-  });
-}
+
+    if (url.pathname.startsWith("/api/") &&
+        request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers });
+    }
+
     if (url.pathname.startsWith("/api/")) {
       if (!env.DB) {
         return jsonError("Database binding DB is missing", 500);
       }
 
       try {
-        if (url.pathname === "/api/health" && request.method === "GET") {
+        if (url.pathname === "/api/health" &&
+            request.method === "GET") {
           await env.DB.prepare("SELECT 1").first();
+
           return Response.json({
             success: true,
             service: "EarnHub API",
@@ -33,15 +34,14 @@ if (url.pathname.startsWith("/api/") && request.method === "OPTIONS") {
           }, { headers });
         }
 
-        if (url.pathname === "/api/register" && request.method === "POST") {
+        if (url.pathname === "/api/register" &&
+            request.method === "POST") {
           const body = await request.json().catch(() => null);
 
-          if (
-            !body ||
-            typeof body.fullName !== "string" ||
-            typeof body.email !== "string" ||
-            typeof body.password !== "string"
-          ) {
+          if (!body ||
+              typeof body.fullName !== "string" ||
+              typeof body.email !== "string" ||
+              typeof body.password !== "string") {
             return jsonError("Enter your name, email and password.");
           }
 
@@ -53,7 +53,8 @@ if (url.pathname.startsWith("/api/") && request.method === "OPTIONS") {
             return jsonError("Name must be between 2 and 100 characters.");
           }
 
-          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
+              email.length > 254) {
             return jsonError("Enter a valid email address.");
           }
 
@@ -66,33 +67,44 @@ if (url.pathname.startsWith("/api/") && request.method === "OPTIONS") {
           ).bind(email).first();
 
           if (existing) {
-            return jsonError("An account with this email already exists.", 409);
+            return jsonError(
+              "An account with this email already exists.", 409
+            );
           }
 
           const id = makeId();
-          const salt = toSafeSalt();
+          const saltBytes = crypto.getRandomValues(new Uint8Array(16));
+          const salt = Array.from(
+            saltBytes,
+            b => b.toString(16).padStart(2, "0")
+          ).join("");
+
           const passwordHash = await hashPassword(password, salt);
 
           await env.DB.prepare(`
-            INSERT INTO users (id, full_name, email, password_hash, role)
+            INSERT INTO users
+              (id, full_name, email, password_hash, role)
             VALUES (?, ?, ?, ?, 'user')
-          `).bind(id, fullName, email, `${salt}:${passwordHash}`).run();
+          `).bind(
+            id, fullName, email, `${salt}:${passwordHash}`
+          ).run();
 
           return Response.json({
             success: true,
-            message: "Account created. Login sessions are not yet enabled.",
+            message: "Account created. Login is not yet enabled.",
             user: { id, fullName, email }
           }, { status: 201, headers });
         }
 
-        if (url.pathname === "/api/login") {
+        if (url.pathname === "/api/login" &&
+            request.method === "POST") {
           return jsonError(
-            "Login is not enabled until secure session handling is implemented.",
-            501
+            "Login is not enabled yet.", 501
           );
         }
 
-        if (url.pathname === "/api/tasks" && request.method === "GET") {
+        if (url.pathname === "/api/tasks" &&
+            request.method === "GET") {
           const result = await env.DB.prepare(`
             SELECT id, title, description, reward_kobo, created_at
             FROM tasks
@@ -108,16 +120,15 @@ if (url.pathname.startsWith("/api/") && request.method === "OPTIONS") {
         }
 
         return jsonError("API endpoint not found.", 404);
-      } catch {
-        return jsonError("Request failed. Check the database schema and deployment.", 500);
+      } catch (error) {
+        console.error("EarnHub API error:", error);
+        return jsonError(
+          "Request failed. Check the database schema and Worker logs.",
+          500
+        );
       }
     }
 
     return env.ASSETS.fetch(request);
   }
 };
-
-function toSafeSalt() {
-  const bytes = crypto.getRandomValues(new Uint8Array(16));
-  return Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
-}
